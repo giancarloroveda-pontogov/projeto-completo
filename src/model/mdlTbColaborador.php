@@ -44,13 +44,19 @@ class TbColaborador {
    * @return TbColaborador
    */
   public function LoadObject($resSet) {
+    $fmt = new Format();
+
     $objTbColaborador = new TbColaborador();
 
     $objTbColaborador->Set("idcolaborador", $resSet['idcolaborador']);
     $objTbColaborador->Set("nmcolaborador", $resSet['nmcolaborador']);
     $objTbColaborador->Set("dsemail", $resSet['dsemail']);
     $objTbColaborador->Set("dssetor", $resSet['dssetor']);
-    $objTbColaborador->Set("dtcontratacao", $resSet['dtcontratacao']);
+    $objTbColaborador->Set("dtcontratacao", $fmt->data($resSet['dtcontratacao']));
+
+    if(!isset($GLOBALS['_intTotalColaborador'])){
+      $GLOBALS['_intTotalColaborador'] = $resSet['_inttotal'];
+    }
 
     return $objTbColaborador;
   }
@@ -77,11 +83,11 @@ class TbColaborador {
                   dtcontratacao
                 )
               VALUES(
-                (select nextval(shtreinamento.sqidtreinamento) as nextid),  
-                ".$fmt->escSqlQuotes($objTbColaborador->Get("nmcolaborador")).",  
-                ".$fmt->escSqlQuotes($objTbColaborador->Get("dsemail")).",  
-                ".$fmt->escSqlQuotes($objTbColaborador->Get("dssetor")).",  
-                ".$fmt->NullBd($objTbColaborador->Get("dtcontratacao"))."
+                (select nextval('shtreinamento.sqidcolaborador') as nextid),  
+                '".$fmt->escSqlQuotes($objTbColaborador->Get("nmcolaborador"))."',  
+                '".$fmt->escSqlQuotes($objTbColaborador->Get("dsemail"))."',  
+                '".$fmt->escSqlQuotes($objTbColaborador->Get("dssetor"))."',  
+                ".$fmt->DataBd($objTbColaborador->Get("dtcontratacao"))."
               );";
 
     if(!$dtbLink->ExecSql($dsSql)) {
@@ -112,10 +118,10 @@ class TbColaborador {
                 )
               VALUES(
                 ".$fmt->NullBd($objTbColaborador->Get("idcolaborador"))."
-                ".$fmt->escSqlQuotes($objTbColaborador->Get("nmcolaborador")).",  
-                ".$fmt->escSqlQuotes($objTbColaborador->Get("dsemail")).",  
-                ".$fmt->escSqlQuotes($objTbColaborador->Get("dssetor")).",  
-                ".$fmt->NullBd($objTbColaborador->Get("dtcontratacao"))."
+                '".$fmt->escSqlQuotes($objTbColaborador->Get("nmcolaborador"))."',  
+                '".$fmt->escSqlQuotes($objTbColaborador->Get("dsemail"))."',  
+                '".$fmt->escSqlQuotes($objTbColaborador->Get("dssetor"))."',  
+                ".$fmt->DataBd($objTbColaborador->Get("dtcontratacao"))."
               );";
 
     if(!$dtbLink->ExecSql($dsSql)) {
@@ -139,12 +145,12 @@ class TbColaborador {
     $dsSql = "UPDATE
                 shtreinamento.tbcolaborador
               SET
-                nmcolaborador = ".$fmt->escSqlQuotes($objTbColaborador->Get("nmcolaborador")).",  
-                dsemail = ".$fmt->escSqlQuotes($objTbColaborador->Get("dsemail")).",  
-                dssetor = ".$fmt->escSqlQuotes($objTbColaborador->Get("dssetor")).",  
-                dtcontratacao = ".$fmt->NullBd($objTbColaborador->Get("dtcontratacao"))."
+                nmcolaborador = '".$fmt->escSqlQuotes($objTbColaborador->Get("nmcolaborador"))."',  
+                dsemail = '".$fmt->escSqlQuotes($objTbColaborador->Get("dsemail"))."',  
+                dssetor = '".$fmt->escSqlQuotes($objTbColaborador->Get("dssetor"))."',  
+                dtcontratacao = ".$fmt->DataBd($objTbColaborador->Get("dtcontratacao"))."
               WHERE
-                idtreinamento = ".$objTbColaborador->Get("idtreinamento").";";
+                idcolaborador = ".$objTbColaborador->Get("idcolaborador").";";
 
     if(!$dtbLink->ExecSql($dsSql)) {
       $arrMsg = $dtbLink->getMessage();
@@ -166,7 +172,7 @@ class TbColaborador {
     $dsSql = "DELETE FROM
                 shtreinamento.tbcolaborador
               WHERE
-                idtreinamento = ".$objTbColaborador->Get("idtreinamento").";";
+                idcolaborador = ".$objTbColaborador->Get("idcolaborador").";";
 
     if(!$dtbLink->ExecSql($dsSql)) {
       $arrMsg = $dtbLink->getMessage();
@@ -220,7 +226,8 @@ class TbColaborador {
     $objTbColaborador = new TbColaborador();
 
     $dsSql = "SELECT
-                *
+                *,
+                count(*) over() as _inttotal
               FROM
                 shtreinamento.tbcolaborador co
               WHERE
