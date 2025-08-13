@@ -66,10 +66,6 @@ class DtbServer {
       return false;
     }
     else{
-      if ($this->strFlMonitora == 'S') {
-        $objDtbLog = new DtbLog();
-        $objDtbLog->SaveLog($this->strQueryClient);
-      }
       return true;
     }
   }

@@ -54,6 +54,10 @@ class TbTreinamento {
     $objTbTreinamento->Set("nrcargahoraria", $resSet['nrcargahoraria']);
     $objTbTreinamento->Set("fltipo", $resSet['fltipo']);
 
+    if(!isset($GLOBALS['_intTotalTreinamento'])){
+      $GLOBALS['_intTotalTreinamento'] = $resSet['_inttotal'];
+    }
+
     return $objTbTreinamento;
   }
 
@@ -80,12 +84,12 @@ class TbTreinamento {
                   fltipo
                 )
               VALUES(
-                (select nextval(shtreinamento.sqidtreinamento) as nextid),  
-                ".$fmt->escSqlQuotes($objTbTreinamento->Get("dstitulo")).",  
-                ".$fmt->escSqlQuotes($objTbTreinamento->Get("dsdescricao")).",  
-                ".$fmt->escSqlQuotes($objTbTreinamento->Get("dsareatecnica")).",  
+                (select nextval('shtreinamento.sqidtreinamento') as nextid),  
+                '".$fmt->escSqlQuotes($objTbTreinamento->Get("dstitulo"))."',  
+                '".$fmt->escSqlQuotes($objTbTreinamento->Get("dsdescricao"))."',  
+                '".$fmt->escSqlQuotes($objTbTreinamento->Get("dsareatecnica"))."',  
                 ".$fmt->NullBd($objTbTreinamento->Get("nrcargahoraria")).",  
-                ".$fmt->NullBd($objTbTreinamento->Get("fltipo"))." 
+                '".$fmt->NullBd($objTbTreinamento->Get("fltipo"))."' 
               );";
 
     if(!$dtbLink->ExecSql($dsSql)) {
@@ -145,14 +149,13 @@ class TbTreinamento {
     $dsSql = "UPDATE
                 shtreinamento.tbtreinamento
               SET
-                dstitulo = ".$fmt->escSqlQuotes($objTbTreinamento->Get("dstitulo")).",  
-                dsdescricao = ".$fmt->escSqlQuotes($objTbTreinamento->Get("dsdescricao")).",  
-                dsareatecnica = ".$fmt->escSqlQuotes($objTbTreinamento->Get("dsareatecnica")).",  
+                dstitulo = '".$fmt->escSqlQuotes($objTbTreinamento->Get("dstitulo"))."',  
+                dsdescricao = '".$fmt->escSqlQuotes($objTbTreinamento->Get("dsdescricao"))."',  
+                dsareatecnica = '".$fmt->escSqlQuotes($objTbTreinamento->Get("dsareatecnica"))."',  
                 nrcargahoraria = ".$fmt->NullBd($objTbTreinamento->Get("nrcargahoraria")).",  
-                fltipo = ".$fmt->NullBd($objTbTreinamento->Get("fltipo"))." 
+                fltipo = '".$fmt->NullBd($objTbTreinamento->Get("fltipo"))."' 
               WHERE
                 idtreinamento = ".$objTbTreinamento->Get("idtreinamento").";";
-
     if(!$dtbLink->ExecSql($dsSql)) {
       $arrMsg = $dtbLink->getMessage();
     }
@@ -227,7 +230,8 @@ class TbTreinamento {
     $objTbTreinamento = new TbTreinamento();
 
     $dsSql = "SELECT
-                *
+                *,
+                count(*) over() as _inttotal 
               FROM
                 shtreinamento.tbtreinamento tr
               WHERE
