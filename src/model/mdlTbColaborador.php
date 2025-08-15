@@ -12,6 +12,9 @@ class TbColaborador {
   private $dssetor;
   private $dtcontratacao;
 
+  // Propriedades Abstratas
+  private $dtbLink;
+
   /**
    * Metodo Construct para Limpeza do Objeto 
    */
@@ -23,6 +26,9 @@ class TbColaborador {
     $this->dtcontratacao = "";
   }
 
+  public function SetDtbLink($dtbLink) {
+    $this->dtbLink = $dtbLink;
+  }
   
   /**
    * Método Set para Carga do Objeto
@@ -71,7 +77,9 @@ class TbColaborador {
    * @return string[]
    */
   public function Insert($objTbColaborador) {
-    $dtbLink = new DtbServer();
+    if(!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
     $fmt = new Format();
 
     $dsSql = "INSERT INTO
@@ -90,8 +98,8 @@ class TbColaborador {
                 ".$fmt->DataBd($objTbColaborador->Get("dtcontratacao"))."
               );";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
+    if(!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
     }
     else {
       $arrMsg['dsMsg'] = "ok";
@@ -105,7 +113,9 @@ class TbColaborador {
    * @return string[]
    */
   public function InsertWithId($objTbColaborador) {
-    $dtbLink = new DtbServer();
+    if(!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
     $fmt = new Format();
 
     $dsSql = "INSERT INTO
@@ -124,8 +134,8 @@ class TbColaborador {
                 ".$fmt->DataBd($objTbColaborador->Get("dtcontratacao"))."
               );";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
+    if(!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
     }
     else {
       $arrMsg['dsMsg'] = "ok";
@@ -139,7 +149,9 @@ class TbColaborador {
    * @return string[]
    */
   public function Update($objTbColaborador) {
-    $dtbLink = new DtbServer();
+    if(!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
     $fmt = new Format();
 
     $dsSql = "UPDATE
@@ -152,8 +164,8 @@ class TbColaborador {
               WHERE
                 idcolaborador = ".$objTbColaborador->Get("idcolaborador").";";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
+    if(!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
     }
     else {
       $arrMsg['dsMsg'] = "ok";
@@ -167,15 +179,17 @@ class TbColaborador {
    * @return string[]
    */
   public function Delete($objTbColaborador) {
-    $dtbLink = new DtbServer();
+    if(!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
 
     $dsSql = "DELETE FROM
                 shtreinamento.tbcolaborador
               WHERE
                 idcolaborador = ".$objTbColaborador->Get("idcolaborador").";";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
+    if(!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
     }
     else {
       $arrMsg['dsMsg'] = "ok";

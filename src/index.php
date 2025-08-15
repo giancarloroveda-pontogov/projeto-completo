@@ -189,6 +189,13 @@
               "data-url": "colaborador/ctrColaborador.php?action=winConsulta"
             }
           },
+          {
+            text: "Participac?o?es",
+            attr: {
+              "data-pagina": "ConsultaParticipacao",
+              "data-url": "participacao/ctrParticipacao.php?action=winConsulta"
+            }
+          }
         ],
         select: function (e) {
           const nmJanela = $(e.item).data("pagina");
@@ -202,11 +209,11 @@
     function OpenWindow(nmJanela, dsUrl, blModal) {
       const containerId = `Win${nmJanela}`
       const filePath = `./controller/${dsUrl}`
-      
+
       if ($(`#${containerId}`).length > 0) {
         $(`#${containerId}`).data("kendoWindow").close();
       }
-      
+
       $("#app").append(`<div id="${containerId}"></div>`);
 
       $(`#${containerId}`).kendoWindow({

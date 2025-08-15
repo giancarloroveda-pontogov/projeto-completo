@@ -3,7 +3,17 @@
 ?>
 
 <script>
-  	$(function () {
+	$(function () {
+		function getSelectedTbColaborador() {
+			const grid = $("#frmConsultaColaborador #GrdConsultaColaborador").data("kendoGrid");
+			const selectedRows = grid.select();
+
+			if (selectedRows.length === 0) {
+				return null;
+			}
+
+			return grid.dataItem(selectedRows[0]);
+		}
 
 		//---------------------------------------------------------------------------------//
 		// Definição do array data source
@@ -134,6 +144,18 @@
 					type: "spacer"
 				},
 				{
+					type: "button",
+					id: "BtnAcessoRapido",
+					hidden: false,
+					spriteCssClass: "k-pg-icon k-i-l2-c10",
+					text: "Acesso Rápido <span class='k-icon k-i-arrow-s' style='width: 12px;'></span>",
+					enable: false,
+					group: "actions",
+					attributes: {
+						tabindex: "31"
+					},
+				},
+				{
 					type: "buttonGroup",
 					buttons: [
 						{
@@ -181,6 +203,28 @@
 				}
 			],
 		})
+
+		if ($("#menuAcessoRapidoColaborador").data("kenodContextMenu")) {
+			$("#menuAcessoRapidoColaborador").data("kenodContextMenu").destroy();
+		}
+
+		$("#frmConsultaColaborador #menuAcessoRapidoColaborador").kendoContextMenu({
+			target: "#frmConsultaColaborador #BtnAcessoRapido",
+			alignToAnchor: true,
+			showOn: "click",
+			select: function (e) {
+				const actions = {
+					"BtnParticipacao": () => {
+						const dataItem = getSelectedTbColaborador();
+
+						OpenWindow("ConsultaParticipacao", `participacao/ctrParticipacao.php?action=winConsulta&idColaborador=${dataItem.idcolaborador}`, false);
+					}
+				};
+
+				const action = actions[e.item.id];
+				if (action) action();
+			}
+		});
 		//---------------------------------------------------------------------------------//
 
 		//---------------------------------------------------------------------------------//
@@ -216,9 +260,10 @@
 					url: "controller/colaborador/ctrColaborador.php",
 					type: "GET",
 					dataType: "JSON",
-					data: function() {
+					data: function () {
 						return {
-							action: "ListColaborador"
+							action: "ListColaborador",
+							filters: getExtraFilter()
 						}
 					}
 				}
@@ -231,7 +276,7 @@
 				},
 				errors: "error"
 			},
-			error: function(e) {
+			error: function (e) {
 				DlgError(e.errors);
 			}
 		});
@@ -255,7 +300,8 @@
 			},
 			sort: function () { },
 			change: function () {
-				SetAccess("T", "#frmConsultaColaborador #BarAcoes", "#BtnEditar", true)
+				SetAccess("T", "#frmConsultaColaborador #BarAcoes", "#BtnEditar", true);
+				SetAccess("T", "#frmConsultaColaborador #BarAcoes", "#BtnAcessoRapido", true);
 			},
 			pageable: {
 				pageSizes: [100, 200, 300, "all"],
@@ -263,13 +309,13 @@
 				input: true,
 			},
 			columns: getColumnsQuery(arrDataSource),
-			columnShow: function (e) { 
+			columnShow: function (e) {
 				setWidthOnShowColumnGrid(e, "ConsultaColaborador");
 			},
-			columnHide: function (e) { 
+			columnHide: function (e) {
 				setWidthOnHideColumnGrid(e, "ConsultaColaborador");
 			},
-			dataBound: function (e) { 
+			dataBound: function (e) {
 				LoadGridExportActions("frmConsultaColaborador", "GrdConsultaColaborador", <?= $frmResult === "" ?>)
 			},
 			filter: function (e) {
@@ -293,6 +339,12 @@
 	});
 </script>
 
+<style>
+	#menuAcessoRapidoTreinamento {
+		border: 0.5px solid #5a8cd7 !important;
+	}
+</style>
+
 <div id="frmConsultaColaborador" class="k-form">
 	<input type="hidden" name="idColaborador" id="idColaborador">
 	<div id="splConsulta">
@@ -310,19 +362,15 @@
 
 						<td style="vertical-align: bottom;padding-bottom: 5px;">
 							<span id="BtnPesquisar" style="cursor: pointer;width: 100px;height: 24px;" title="Pesquisar"
-								data-role="button" class="k-button k-button-icon" role="button" aria-disabled="false"
-								tabindex="29">
-								<span class="k-sprite k-pg-icon k-i-l1-c2"
-									style="margin: 0 auto; text-align: center;"></span>
+								data-role="button" class="k-button k-button-icon" role="button" aria-disabled="false" tabindex="29">
+								<span class="k-sprite k-pg-icon k-i-l1-c2" style="margin: 0 auto; text-align: center;"></span>
 								<span style="margin: 0 auto; margin-right: 3px;">Pesquisar</span>
 							</span>
 
-							<span id="BtnAddFilter"
-								style="cursor: pointer;width: 21px !important;height: 21px !important"
+							<span id="BtnAddFilter" style="cursor: pointer;width: 21px !important;height: 21px !important"
 								title="Adicionar Filtro" data-role="button" class="k-button k-button-icon" role="button"
 								aria-disabled="false" tabindex="">
-								<span class="k-sprite k-pg-icon k-i-l1-c1"
-									style="margin: 0 auto;margin-top: 1.4px;"></span>
+								<span class="k-sprite k-pg-icon k-i-l1-c1" style="margin: 0 auto;margin-top: 1.4px;"></span>
 							</span>
 						</td>
 					</tr>
@@ -333,6 +381,10 @@
 		</div>
 		<div id="splMiddle">
 			<div id="GrdConsultaColaborador"></div>
+
+			<ul id="menuAcessoRapidoColaborador" style="display: none; width: 100px;">
+				<li id="BtnParticipacao"><span class="k-pg-icon k-i-l1-c1"></span> Participações</li>
+			</ul>
 		</div>
 		<div id="splFooter">
 			<div id="bottonConsultaColaborador">

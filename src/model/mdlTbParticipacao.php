@@ -1,6 +1,7 @@
 <?php
 
-class TbParticipacao {
+class TbParticipacao
+{
   //--------------------------------------------------------------------------------------------------------//
   // Métodos de Definição da Classe [CLASS]
   //--------------------------------------------------------------------------------------------------------//  
@@ -10,27 +11,40 @@ class TbParticipacao {
   private $idcolaborador;
   private $idtreinamento;
 
+  // Propriedades Abstratas
+  private $dtbLink;
+  private $dstitulo;
+  private $nmcolaborador;
+
   /**
    * Metodo Construct para Limpeza do Objeto 
    */
-  public function __construct() {
+  public function __construct()
+  {
     $this->idparticipacao = "";
     $this->idcolaborador = "";
     $this->idtreinamento = "";
   }
-  
+
   /**
    * Método Set para Carga do Objeto
    */
-  public function Set($prpTbParticipacao, $valTbParticipacao) {
+  public function Set($prpTbParticipacao, $valTbParticipacao)
+  {
     $this->$prpTbParticipacao = $valTbParticipacao;
   }
 
   /**
    * Método Get para Busca do Objeto
    */
-  public function Get($prpTbParticipacao) {
+  public function Get($prpTbParticipacao)
+  {
     return $this->$prpTbParticipacao;
+  }
+
+  public function SetDtbLink($dtbLink)
+  {
+    $this->dtbLink = $dtbLink;
   }
 
   /**
@@ -38,12 +52,19 @@ class TbParticipacao {
    * @param $resSet -> ResultSet da Query
    * @return TbParticipacao
    */
-  public function LoadObject($resSet) {
+  public function LoadObject($resSet)
+  {
     $objTbParticipacao = new TbParticipacao();
 
     $objTbParticipacao->Set("idparticipacao", $resSet['idparticipacao']);
     $objTbParticipacao->Set("idtreinamento", $resSet['idtreinamento']);
     $objTbParticipacao->Set("idcolaborador", $resSet['idcolaborador']);
+    $objTbParticipacao->Set("nmcolaborador", $resSet['nmcolaborador']);
+    $objTbParticipacao->Set("dstitulo", $resSet['dstitulo']);
+
+    if (!isset($GLOBALS['_intTotalParticipacao'])) {
+      $GLOBALS['_intTotalParticipacao'] = $resSet['_inttotal'];
+    }
 
     return $objTbParticipacao;
   }
@@ -52,10 +73,11 @@ class TbParticipacao {
    * Herança da tabela TbColaborador
    * @return TbColaborador
    */
-  public function GetObjTbColaborador() {
-    if(!$this->objTbColaborador) {
+  public function GetObjTbColaborador()
+  {
+    if (!$this->objTbColaborador) {
       $this->objTbColaborador = new TbColaborador();
-      if($this->Get("idcolaborador") != "") {
+      if ($this->Get("idcolaborador") != "") {
         $this->objTbColaborador = TbColaborador::LoadByIdColaborador($this->Get("idcolaborador"));
       }
     }
@@ -66,10 +88,11 @@ class TbParticipacao {
    * Herança da tabela TbTreinamento
    * @return TbTreinamento
    */
-  public function GetObjTbTreinamento() {
-    if(!$this->objTbTreinamento) {
+  public function GetObjTbTreinamento()
+  {
+    if (!$this->objTbTreinamento) {
       $this->objTbTreinamento = new TbTreinamento();
-      if($this->Get("idtreinamento") != "") {
+      if ($this->Get("idtreinamento") != "") {
         $this->objTbTreinamento = TbTreinamento::LoadByIdTreinamento($this->Get("idtreinamento"));
       }
     }
@@ -85,8 +108,11 @@ class TbParticipacao {
    * @param $objTbParticipacao -> Objeto com os dados a serem inseridos
    * @return string[]
    */
-  public function Insert($objTbParticipacao) {
-    $dtbLink = new DtbServer();
+  public function Insert($objTbParticipacao)
+  {
+    if (!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
     $fmt = new Format();
 
     $dsSql = "INSERT INTO
@@ -96,27 +122,29 @@ class TbParticipacao {
                   idcolaborador
                 )
               VALUES(
-                (select nextval(shtreinamento.sqidparticipacao) as nextid),  
-                ".$fmt->NullBd($objTbParticipacao->Get("idtreinamento")).",  
-                ".$fmt->NullBd($objTbParticipacao->Get("idcolaborador"))." 
+                (select nextval('shtreinamento.sqidparticipacao') as nextid),  
+                " . $fmt->NullBd($objTbParticipacao->Get("idtreinamento")) . ",  
+                " . $fmt->NullBd($objTbParticipacao->Get("idcolaborador")) . " 
               );";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
-    }
-    else {
+    if (!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
+    } else {
       $arrMsg['dsMsg'] = "ok";
     }
     return $arrMsg;
   }
-  
+
   /**
    * Insere um registro na tabela TbParticipacao
    * @param $objTbParticipacao -> Objeto com os dados a serem inseridos
    * @return string[]
    */
-  public function InsertWithId($objTbParticipacao) {
-    $dtbLink = new DtbServer();
+  public function InsertWithId($objTbParticipacao)
+  {
+    if (!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
     $fmt = new Format();
 
     $dsSql = "INSERT INTO
@@ -126,15 +154,14 @@ class TbParticipacao {
                   idcolaborador
                 )
               VALUES(
-                ".$fmt->NullBd($objTbParticipacao->Get("idparticipacao")).",  
-                ".$fmt->NullBd($objTbParticipacao->Get("idtreinamento")).",  
-                ".$fmt->NullBd($objTbParticipacao->Get("idcolaborador"))." 
+                " . $fmt->NullBd($objTbParticipacao->Get("idparticipacao")) . ",  
+                " . $fmt->NullBd($objTbParticipacao->Get("idtreinamento")) . ",  
+                " . $fmt->NullBd($objTbParticipacao->Get("idcolaborador")) . " 
               );";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
-    }
-    else {
+    if (!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
+    } else {
       $arrMsg['dsMsg'] = "ok";
     }
     return $arrMsg;
@@ -145,22 +172,24 @@ class TbParticipacao {
    * @param TbParticipacao $objTbParticipacao -> Objeto com os dados a serem alterados
    * @return string[]
    */
-  public function Update($objTbParticipacao) {
-    $dtbLink = new DtbServer();
+  public function Update($objTbParticipacao)
+  {
+    if (!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
     $fmt = new Format();
 
     $dsSql = "UPDATE
                 shtreinamento.tbparticipacao
               SET
-                idtreinamento = ".$fmt->NullBd($objTbParticipacao->Get("idtreinamento")).",  
-                idcolaborador = ".$fmt->NullBd($objTbParticipacao->Get("idcolaborador"))."   
+                idtreinamento = " . $fmt->NullBd($objTbParticipacao->Get("idtreinamento")) . ",  
+                idcolaborador = " . $fmt->NullBd($objTbParticipacao->Get("idcolaborador")) . "   
               WHERE
-                idparticipacao = ".$objTbParticipacao->Get("idparticipacao").";";
+                idparticipacao = " . $objTbParticipacao->Get("idparticipacao") . ";";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
-    }
-    else {
+    if (!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
+    } else {
       $arrMsg['dsMsg'] = "ok";
     }
     return $arrMsg;
@@ -171,18 +200,20 @@ class TbParticipacao {
    * @param TbParticipacao $objTbParticipacao -> Objeto com os dados a serem eliminados
    * @return string[]
    */
-  public function Delete($objTbParticipacao) {
-    $dtbLink = new DtbServer();
+  public function Delete($objTbParticipacao)
+  {
+    if (!$this->dtbLink) {
+      $this->dtbLink = new DtbServer();
+    }
 
     $dsSql = "DELETE FROM
-                shtreinamento.tbtreinamento
+                shtreinamento.tbparticipacao
               WHERE
-                idtreinamento = ".$objTbParticipacao->Get("idtreinamento").";";
+                idparticipacao = " . $objTbParticipacao->Get("idparticipacao") . ";";
 
-    if(!$dtbLink->ExecSql($dsSql)) {
-      $arrMsg = $dtbLink->getMessage();
-    }
-    else {
+    if (!$this->dtbLink->ExecSql($dsSql)) {
+      $arrMsg = $this->dtbLink->getMessage();
+    } else {
       $arrMsg['dsMsg'] = "ok";
     }
     return $arrMsg;
@@ -197,22 +228,32 @@ class TbParticipacao {
    * @param $idParticipacao -> Chave a ser buscada
    * @return TbParticipacao
    */
-  public static function LoadByIdParticipacao($idParticipacao) {
+  public static function LoadByIdParticipacao($idParticipacao)
+  {
     $dtbLink = new DtbServer();
     $fmt = new Format();
     $objTbParticipacao = new TbParticipacao();
 
     $dsSql = "SELECT
-                *
+                pa.*,
+                tr.dstitulo,
+                co.nmcolaborador
               FROM
                 shtreinamento.tbparticipacao pa
+              JOIN
+                shtreinamento.tbtreinamento tr
+              ON 
+                pa.idtreinamento = tr.idtreinamento
+              JOIN 
+                shtreinamento.tbcolaborador co
+              ON 
+                co.idcolaborador = pa.idcolaborador
               WHERE
                 idparticipacao = {$idParticipacao};";
 
-    if(!$dtbLink->Query($dsSql)) {
-      return $fmt->RemoveQuebraLinha($dtbLink->getMessage()['dsMsg']."<br>");
-    }
-    else {
+    if (!$dtbLink->Query($dsSql)) {
+      return $fmt->RemoveQuebraLinha($dtbLink->getMessage()['dsMsg'] . "<br>");
+    } else {
       $resSet = $dtbLink->FetchArray();
       $objTbParticipacao = $objTbParticipacao->LoadObject($resSet);
     }
@@ -225,29 +266,40 @@ class TbParticipacao {
    * @param $strOrdenacao -> Ordenação da pesquisa
    * @return TbParticipacao[]
    */
-  public static function ListByCondicao($strCondicao, $strOrdenacao) {
+  public static function ListByCondicao($strCondicao, $strOrdenacao)
+  {
     $dtbLink = new DtbServer();
     $fmt = new Format();
     $objTbParticipacao = new TbParticipacao();
 
     $dsSql = "SELECT
-                *
+                pa.*,
+                tr.dstitulo,
+                co.nmcolaborador,
+                COUNT(*) OVER() AS _inttotal
               FROM
                 shtreinamento.tbparticipacao pa
+              JOIN
+                shtreinamento.tbtreinamento tr
+              ON 
+                pa.idtreinamento = tr.idtreinamento
+              JOIN 
+                shtreinamento.tbcolaborador co
+              ON 
+                co.idcolaborador = pa.idcolaborador
               WHERE
                 1 = 1 ";
 
-    if($strCondicao != "") {
+    if ($strCondicao != "") {
       $dsSql .= $strCondicao;
     }
-    if($strOrdenacao != "") {
+    if ($strOrdenacao != "") {
       $dsSql .= " ORDER BY {$strOrdenacao}";
     }
 
-    if(!$dtbLink->Query($dsSql)) {
-      return $fmt->RemoveQuebraLinha($dtbLink->getMessage()['dsMsg']."<br>");
-    }
-    else {
+    if (!$dtbLink->Query($dsSql)) {
+      return $fmt->RemoveQuebraLinha($dtbLink->getMessage()['dsMsg'] . "<br>");
+    } else {
       while ($resSet = $dtbLink->FetchArray()) {
         $aroTbParticipacao[] = $objTbParticipacao->LoadObject($resSet);
       }
@@ -259,16 +311,16 @@ class TbParticipacao {
    * Retorna o próximo id da sequência
    * @return int
    */
-  public static function GetNextId(){
+  public static function GetNextId()
+  {
     $dtbLink = new DtbServer();
     $fmt = new Format();
 
     $dsSql = "SELECT nextval('shtreinamento.sqidparticipacao') as nextid";
 
-    if(!$dtbLink->Query($dsSql)) {
-      return $fmt->RemoveQuebraLinha($dtbLink->getMessage()['dsMsg']."<br>");
-    }
-    else {
+    if (!$dtbLink->Query($dsSql)) {
+      return $fmt->RemoveQuebraLinha($dtbLink->getMessage()['dsMsg'] . "<br>");
+    } else {
       $resSet = $dtbLink->FetchArray();
       return $resSet['nextid'];
     }

@@ -4,8 +4,8 @@
 
 <script>
 	$(function () {
-		function getSelectedTbTreinamento() {
-			const grid = $("#frmConsultaTreinamento #GrdConsultaTreinamento").data("kendoGrid");
+		function getSelectedTbParticipacao() {
+			const grid = $("#frmConsultaParticipacao #GrdConsultaParticipacao").data("kendoGrid");
 			const selectedRows = grid.select();
 
 			if (selectedRows.length === 0) {
@@ -20,7 +20,7 @@
 		//---------------------------------------------------------------------------------//
 		var arrDataSource = [
 			{
-				name: "idtreinamento",
+				name: "idparticipacao",
 				type: "integer",
 				label: "Id",
 				visibleFilter: 'true',
@@ -40,8 +40,8 @@
 			{
 				name: "dstitulo",
 				type: "string",
-				label: "Título",
-				visibleFilter: 'true',
+				label: "Treinamento",
+				visibleFilter: 'false',
 				orderFilter: '1',
 
 				orderGrid: '2',
@@ -56,10 +56,10 @@
 				positionPreview: '2'
 			},
 			{
-				name: "dsdescricao",
+				name: "nmcolaborador",
 				type: "string",
-				label: "Descrição",
-				visibleFilter: 'true',
+				label: "Colaborador",
+				visibleFilter: 'false',
 				orderFilter: '3',
 
 				orderGrid: '3',
@@ -73,71 +73,16 @@
 				widthPreview: '600',
 				positionPreview: '3'
 			},
-			{
-				name: "dsareatecnica",
-				type: "string",
-				label: "Área Técnica",
-				visibleFilter: 'true',
-				orderFilter: '4',
-
-				orderGrid: '4',
-				widthGrid: '',
-				hiddenGrid: 'false',
-				headerAttributesGrid: 'font-weight: bold',
-				attributesGrid: '',
-
-				showPreview: 'true',
-				indiceTabPreview: 'tabDadosGerais',
-				widthPreview: '600',
-				positionPreview: '4'
-			},
-			{
-				name: "nrcargahoraria",
-				type: "integer",
-				label: "Carga Horária",
-				visibleFilter: 'true',
-				orderFilter: '5',
-
-				orderGrid: '5',
-				widthGrid: '',
-				hiddenGrid: 'false',
-				headerAttributesGrid: 'font-weight: bold',
-				attributesGrid: '',
-
-				showPreview: 'true',
-				indiceTabPreview: 'tabDadosGerais',
-				widthPreview: '80',
-				positionPreview: '5'
-			},
-			{
-				name: "dstipo",
-				type: "string",
-				label: "Tipo",
-				visibleFilter: 'true',
-				orderFilter: '6',
-
-				orderGrid: '6',
-				widthGrid: '',
-				hiddenGrid: 'false',
-				headerAttributesGrid: 'font-weight: bold',
-				attributesGrid: '',
-
-				showPreview: 'true',
-				indiceTabPreview: 'tabDadosGerais',
-				widthPreview: '100',
-				positionPreview: '6',
-				togetherPreview: 'cdpagina'
-			},
 		];
 		//---------------------------------------------------------------------------------//
 
 		//---------------------------------------------------------------------------------//
 		// Configurar a tela para usar splitter
 		//---------------------------------------------------------------------------------//
-		arrDataSource = LoadConfigurationQuery(arrDataSource, "ConsultaTreinamento")
+		arrDataSource = LoadConfigurationQuery(arrDataSource, "ConsultaParticipacao")
 
 		// Configuração manual do splitter
-		$("#frmConsultaTreinamento #splConsulta").kendoSplitter({
+		$("#frmConsultaParticipacao #splConsulta").kendoSplitter({
 			orientation: 'vertical',
 			panes: [
 				{ size: "15%" },
@@ -150,45 +95,66 @@
 		//---------------------------------------------------------------------------------//
 		// Instanciando os campos combo da consulta
 		//---------------------------------------------------------------------------------//
-		createPgFilter(arrDataSource, "ConsultaTreinamento")
+		createPgFilter(arrDataSource, "ConsultaParticipacao")
+
+		$("#frmConsultaParticipacao #idTreinamento").multipleSelect({
+			placeholder: "Selecione uma opção",
+			selectAllText: "Selecionar todos",
+			allSelected: "Todos selecionados",
+			filter: true,
+		});
+
+		$("#frmConsultaParticipacao #idColaborador").multipleSelect({
+			placeholder: "Selecione uma opção",
+			selectAllText: "Selecionar todos",
+			allSelected: "Todos selecionados",
+			filter: true,
+		});
+
+		const pmsColaborador = $.post(
+			"controller/colaborador/ctrColaborador.php?action=ListColaborador",
+			function (response) {
+				let strOptions = "";
+				for (let i = 0; i < response.jsnColaborador.length; i++) {
+					strOptions += `<option ${response.jsnColaborador[i].idcolaborador == "<?php echo $idColaborador ?>" ? "selected" : ""} value="${response.jsnColaborador[i].idcolaborador}">${response.jsnColaborador[i].nmcolaborador}</option>`;
+				}
+
+				$("#frmConsultaParticipacao #idColaborador").html(strOptions);
+				$("#frmConsultaParticipacao #idColaborador").multipleSelect("refresh");
+
+				let n = 0;
+			},
+			"json"
+		);
+
+		const pmsTreinamento = $.post(
+			"controller/treinamento/ctrTreinamento.php?action=ListTreinamento",
+			function (response) {
+				let strOptions = "";
+				for (i = 0; i < response.jsnTreinamento.length; i++) {
+					strOptions += `<option ${response.jsnTreinamento[i].idtreinamento == "<?php echo $idTreinamento ?>" ? "selected" : ""} value="${response.jsnTreinamento[i].idtreinamento}">${response.jsnTreinamento[i].dstitulo}</option>`;
+				}
+
+				$("#frmConsultaParticipacao #idTreinamento").html(strOptions);
+				$("#frmConsultaParticipacao #idTreinamento").multipleSelect("refresh");
+			},
+			"json"
+		);
+
+		Promise.all([pmsTreinamento, pmsColaborador])
+			.then(() => {
+				$("#frmConsultaParticipacao #BtnPesquisar").click();
+			})
+
 		//---------------------------------------------------------------------------------//
 
 		//---------------------------------------------------------------------------------//
 		// Instanciando a barra de ações
 		//---------------------------------------------------------------------------------//
-		$("#frmConsultaTreinamento #BarAcoes").kendoToolBar({
-
+		$("#frmConsultaParticipacao #BarAcoes").kendoToolBar({
 			items: [
 				{
 					type: "spacer"
-				},
-				{
-					type: "button",
-					id: "BtnIncluirParticipacao",
-					spriteCssClass: "k-pg-icon k-i-l1-c1",
-					text: "Registrar Participação",
-					group: "actions",
-					enable: false,
-					attributes: {
-						tabindex: "32"
-					},
-					click: function () {
-						const dataItem = getSelectedTbTreinamento();
-
-						OpenWindow("MultiploCadastroParticipacao", `participacao/ctrParticipacao.php?action=incluirMulti&idTreinamento=${dataItem.idtreinamento}`, true);
-					}
-				},
-				{
-					type: "button",
-					id: "BtnAcessoRapido",
-					hidden: false,
-					spriteCssClass: "k-pg-icon k-i-l2-c10",
-					text: "Acesso Rápido <span class='k-icon k-i-arrow-s' style='width: 12px;'></span>",
-					enable: false,
-					group: "actions",
-					attributes: {
-						tabindex: "33"
-					},
 				},
 				{
 					type: "buttonGroup",
@@ -199,10 +165,10 @@
 							text: "Incluir",
 							group: "actions",
 							attributes: {
-								tabindex: "34"
+								tabindex: "33"
 							},
 							click: function () {
-								OpenWindow("CadastroTreinamento", "treinamento/ctrTreinamento.php?action=incluir", true);
+								OpenWindow("CadastroParticipacao", "participacao/ctrParticipacao.php?action=incluir", true);
 							}
 						},
 						{
@@ -212,12 +178,12 @@
 							group: "actions",
 							enable: false,
 							attributes: {
-								tabindex: "35"
+								tabindex: "34"
 							},
 							click: function () {
-								const dataItem = getSelectedTbTreinamento();
+								const dataItem = getSelectedTbParticipacao();
 
-								OpenWindow("CadastroTreinamento", `treinamento/ctrTreinamento.php?action=editar&idTreinamento=${dataItem.idtreinamento}`, true);
+								OpenWindow("CadastroParticipacao", `participacao/ctrParticipacao.php?action=editar&idParticipacao=${dataItem.idparticipacao}`, true);
 							}
 						},
 						{
@@ -226,46 +192,24 @@
 							text: "Fechar",
 							group: "actions",
 							attributes: {
-								tabindex: "36"
+								tabindex: "35"
 							},
 							click: function () {
-								$("#WinConsultaTreinamento").data("kendoWindow").close();
+								$("#WinConsultaParticipacao").data("kendoWindow").close();
 							}
 						},
 					]
 				}
 			],
 		})
-
-		if ($("#menuAcessoRapidoTreinamento").data("kenodContextMenu")) {
-			$("#menuAcessoRapidoTreinamento").data("kenodContextMenu").destroy();
-		}
-
-		$("#frmConsultaTreinamento #menuAcessoRapidoTreinamento").kendoContextMenu({
-			target: "#frmConsultaTreinamento #BtnAcessoRapido",
-			alignToAnchor: true,
-			showOn: "click",
-			select: function (e) {
-				const actions = {
-					"BtnParticipacao": () => {
-						const dataItem = getSelectedTbTreinamento();
-
-						OpenWindow("ConsultaParticipacao", `participacao/ctrParticipacao.php?action=winConsulta&idTreinamento=${dataItem.idtreinamento}`, false);
-					}
-				};
-
-				const action = actions[e.item.id];
-				if (action) action();
-			}
-		});
 		//---------------------------------------------------------------------------------//
 
 		//---------------------------------------------------------------------------------//
 		// Instanciando o botão de consulta
 		//---------------------------------------------------------------------------------//
-		$("#frmConsultaTreinamento #BtnPesquisar").kendoButton({
+		$("#frmConsultaParticipacao #BtnPesquisar").kendoButton({
 			click: function (e) {
-				mountFilteredScreen('filterDefault', e, 'ConsultaTreinamento', arrDataSource, DtsConsultaTreinamento, getExtraFilter())
+				mountFilteredScreen('filterDefault', e, 'ConsultaParticipacao', arrDataSource, DtsConsultaParticipacao, getExtraFilter())
 			}
 		});
 		//---------------------------------------------------------------------------------//
@@ -274,7 +218,7 @@
 		// Filtro extra da consulta
 		//---------------------------------------------------------------------------------//
 		function getExtraFilter() {
-			let arrFields = LoadFilterSplitter("ConsultaTreinamento", arrDataSource);
+			let arrFields = LoadFilterSplitter("ConsultaParticipacao", arrDataSource);
 
 			return arrFields;
 		}
@@ -283,26 +227,28 @@
 		//---------------------------------------------------------------------------------//
 		// Instanciando o dataSource da consulta
 		//---------------------------------------------------------------------------------//
-		var DtsConsultaTreinamento = new kendo.data.DataSource({
+		var DtsConsultaParticipacao = new kendo.data.DataSource({
 			pageSize: 100,
 			serverPaging: true,
 			serverFiltering: true,
 			serverSorting: true,
 			transport: {
 				read: {
-					url: "controller/treinamento/ctrTreinamento.php",
+					url: "controller/participacao/ctrParticipacao.php",
 					type: "GET",
 					dataType: "JSON",
 					data: function () {
 						return {
-							action: "ListTreinamento",
+							action: "ListParticipacao",
 							filters: getExtraFilter(),
+							arrIdColaborador: $("#frmConsultaParticipacao #idColaborador").multipleSelect("getSelects"),
+							arrIdTreinamento: $("#frmConsultaParticipacao #idTreinamento").multipleSelect("getSelects"),
 						}
 					}
 				}
 			},
 			schema: {
-				data: "jsnTreinamento",
+				data: "jsnParticipacao",
 				total: "jsnTotal",
 				model: {
 					fields: getModelDataSource(arrDataSource)
@@ -318,9 +264,10 @@
 		//---------------------------------------------------------------------------------//
 		// Instanciando o Grid da consulta
 		//---------------------------------------------------------------------------------//
-		$("#frmConsultaTreinamento #GrdConsultaTreinamento").kendoGrid({
-			dataSource: DtsConsultaTreinamento,
-			height: getHeightGridQuery("ConsultaTreinamento"),
+		$("#frmConsultaParticipacao #GrdConsultaParticipacao").kendoGrid({
+			dataSource: DtsConsultaParticipacao,
+			autoBind: false,
+			height: getHeightGridQuery("ConsultaParticipacao"),
 			selectable: true,
 			resizable: true,
 			reorderable: true,
@@ -333,9 +280,7 @@
 			},
 			sort: function () { },
 			change: function () {
-				SetAccess("T", "#frmConsultaTreinamento #BarAcoes", "#BtnEditar", true)
-				SetAccess("T", "#frmConsultaTreinamento #BarAcoes", "#BtnIncluirParticipacao", true)
-				SetAccess("T", "#frmConsultaTreinamento #BarAcoes", "#BtnAcessoRapido", true)
+				SetAccess("T", "#frmConsultaParticipacao #BarAcoes", "#BtnEditar", true)
 			},
 			pageable: {
 				pageSizes: [100, 200, 300, "all"],
@@ -344,46 +289,57 @@
 			},
 			columns: getColumnsQuery(arrDataSource),
 			columnShow: function (e) {
-				setWidthOnShowColumnGrid(e, "ConsultaTreinamento");
+				setWidthOnShowColumnGrid(e, "ConsultaParticipacao");
 			},
 			columnHide: function (e) {
-				setWidthOnHideColumnGrid(e, "ConsultaTreinamento");
+				setWidthOnHideColumnGrid(e, "ConsultaParticipacao");
 			},
 			dataBound: function (e) {
-				LoadGridExportActions("frmConsultaTreinamento", "GrdConsultaTreinamento", <?= $frmResult === "" ?>)
+				LoadGridExportActions("frmConsultaParticipacao", "GrdConsultaParticipacao", <?= $frmResult === "" ?>)
 			},
 			filter: function (e) {
-				mountFilteredScreen('filterColumn', e, 'ConsultaTreinamento', arrDataSource, DtsConsultaTreinamento, getExtraFilter())
+				mountFilteredScreen('filterColumn', e, 'ConsultaParticipacao', arrDataSource, DtsConsultaParticipacao, getExtraFilter())
 			},
 		});
 
 		// Adicionando ação de duplo clique ao clicar no grid
-		$("#frmConsultaTreinamento #GrdConsultaTreinamento").on("dblclick", "tbody > tr", function () {
-			$("#frmConsultaTreinamento #BtnEditar").click();
+		$("#frmConsultaParticipacao #GrdConsultaParticipacao").on("dblclick", "tbody > tr", function () {
+			$("#frmConsultaParticipacao #BtnEditar").click();
 		});
 		//---------------------------------------------------------------------------------//
 
 		//---------------------------------------------------------------------------------//
 		// Definir preview do registro
 		//---------------------------------------------------------------------------------//
-		createScreenPreview(arrDataSource, "ConsultaTreinamento");
+		createScreenPreview(arrDataSource, "ConsultaParticipacao");
 		//---------------------------------------------------------------------------------//
 
-		$("#WinConsultaTreinamento").data("kendoWindow").center().open();
+		$("#WinConsultaParticipacao").data("kendoWindow").center().open();
 	});
 </script>
 
-<style>
-	#menuAcessoRapidoTreinamento {
-		border: 0.5px solid #5a8cd7 !important;
-	}
-</style>
-
-<div id="frmConsultaTreinamento" class="k-form">
-	<input type="hidden" name="idTreinamento" id="idTreinamento">
+<div id="frmConsultaParticipacao" class="k-form">
+	<input type="hidden" name="idParticipacao" id="idParticipacao">
 	<div id="splConsulta">
 		<div id="splHeader">
 			<div class="k-bg-blue screen-filter-content">
+				<table width="100%" border="0" cellspacing="2" cellpadding="0">
+					<tr>
+						<td class="" style="width: 120px; text-align: right;">Treinamento:</td>
+						<td style="width: 270px;">
+							<select name="idTreinamento[]" multiple="multiple" id="idTreinamento" style="width: 150px">
+							</select>
+							<label for="idTreinamento" class="screenreader">Título</label>
+						</td>
+
+						<td class="" style="width: 120px; text-align: right;">Colaborador:</td>
+						<td>
+							<select name="idColaborador[]" multiple="multiple" id="idColaborador" style="width: 150px"></select>
+							<label for="idColaborador" class="screenreader">Título</label>
+						</td>
+					</tr>
+				</table>
+
 				<table>
 					<tr>
 						<td style="width: 120px;text-align: right;vertical-align: top;padding-top: 6px;">
@@ -391,7 +347,7 @@
 						</td>
 
 						<td>
-							<div id="fltConsultaTreinamento" style="width: auto;"></div>
+							<div id="fltConsultaParticipacao" style="width: auto;"></div>
 						</td>
 
 						<td style="vertical-align: bottom;padding-bottom: 5px;">
@@ -414,19 +370,15 @@
 			</div>
 		</div>
 		<div id="splMiddle">
-			<div id="GrdConsultaTreinamento"></div>
-
-			<ul id="menuAcessoRapidoTreinamento" style="display: none; width: 100px;">
-				<li id="BtnParticipacao"><span class="k-pg-icon k-i-l1-c1"></span> Participações</li>
-			</ul>
+			<div id="GrdConsultaParticipacao"></div>
 		</div>
 		<div id="splFooter">
-			<div id="bottonConsultaTreinamento">
-				<div id="tabStripConsultaTreinamento">
+			<div id="bottonConsultaParticipacao">
+				<div id="tabStripConsultaParticipacao">
 					<ul>
 						<li id="tabDadosGerais" class="k-state-active"><label>Detalhes</label></li>
 					</ul>
-					<div id="tabDadosGeraisVisualizacaoConsultaTreinamento"></div>
+					<div id="tabDadosGeraisVisualizacaoConsultaParticipacao"></div>
 				</div>
 			</div>
 		</div>
